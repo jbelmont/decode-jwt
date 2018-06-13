@@ -25,6 +25,7 @@ type StandardClaims struct {
 	Issuer    string `json:"iss,omitempty"`
 	NotBefore int64  `json:"nbf,omitempty"`
 	Subject   string `json:"sub,omitempty"`
+	Name      string `json:"name,omitempty"`
 }
 
 type MapClaims map[string]interface{}
@@ -46,11 +47,11 @@ func decodeAccessToken(accessToken string, claims StandardClaims) (*Token, error
 		return token, fmt.Errorf("An error occurred unmarshalling token")
 	}
 	var claimBytes []byte
-	token.Claims = claims
 	if claimBytes, err = decodeTokenSegment(parts[1]); err != nil {
 		return token, fmt.Errorf("An error occurred unmarshalling token")
 	}
 	dec := json.NewDecoder(bytes.NewBuffer(claimBytes))
 	err = dec.Decode(&claims)
+	token.Claims = claims
 	return token, err
 }

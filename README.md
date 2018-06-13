@@ -1,5 +1,5 @@
 # base64
 
-A go library that conducts base64 encoding and decoding
+A go library to help you base 64 decode a JSON Web Token (JWT)
 
-More to come
+In order to run the tests just run `go test`
