@@ -1,20 +1,23 @@
-package base64
+package main
 
 import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"flag"
 	"fmt"
+	"log"
+	"os"
 	"strings"
 )
 
 // Token contains typical values returned from REST API.
 type Token struct {
-	Raw       string                 // The raw token.  Populated when you Parse a token
-	Header    map[string]interface{} // The first segment of the token
-	Claims    StandardClaims         // The second segment of the token
-	Signature string                 // The third segment of the token.  Populated when you Parse a token
-	Valid     bool                   // Is the token valid?  Populated when you Parse/Verify a token
+	Raw       string                 `json:"raw"`       // The raw token.  Populated when you Parse a token
+	Header    map[string]interface{} `json:"headers"`   // The first segment of the token
+	Claims    StandardClaims         `json:"claims"`    // The second segment of the token
+	Signature string                 `json:"signature"` // The third segment of the token.  Populated when you Parse a token
+	Valid     bool                   `json:"valid"`     // Is the token valid?  Populated when you Parse/Verify a token
 }
 
 type StandardClaims struct {
@@ -54,4 +57,28 @@ func decodeAccessToken(accessToken string, claims StandardClaims) (*Token, error
 	err = dec.Decode(&claims)
 	token.Claims = claims
 	return token, err
+}
+
+var (
+	jwt = flag.String("jwt", "", "Please provide a jwt to be decoded")
+)
+
+func main() {
+	flag.Parse()
+
+	if len(*jwt) == 0 {
+		flag.PrintDefaults()
+		os.Exit(2)
+	}
+
+	jwt, err := decodeAccessToken(*jwt, StandardClaims{})
+	if err != nil {
+		log.Fatal("Could not parse the JSON Web Token")
+	}
+	prettyJWT, err := json.MarshalIndent(jwt, "", " ")
+	if err != nil {
+		log.Fatal("Could not Marshal this type")
+	}
+	addNewLine := append(prettyJWT, '\n')
+	os.Stdout.Write(addNewLine)
 }
